@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Factorization Challenge</title>
+    
+    <!-- This script is the magic that creates the PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* Daylight Color Scheme */
+        :root {
+            --sky-blue: #87CEEB;
+            --sun-yellow: #FFD700;
+            --cloud-white: #FFFFFF;
+            --text-dark: #333333;
+            --grass-green: #4CAF50;
+            --error-red: #F44336;
+            --bg-light: #F0F8FF;
+            --btn-hover: #E0F2FE;
+            --btn-border: #AED6F1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        /* Container Styles */
+        .container {
+            background-color: var(--cloud-white);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+            border-top: 8px solid var(--sun-yellow);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2C82C9;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .subtitle {
+            color: #555;
+            margin-bottom: 25px;
+            font-size: 1em;
+        }
+
+        /* Menu Buttons */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .menu-btn {
+            background-color: white;
+            border: 2px solid var(--sky-blue);
+            padding: 15px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #2C3E50;
+            font-weight: bold;
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-btn span.badge {
+            background-color: var(--sky-blue);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-right: 15px;
+            font-size: 0.9em;
+        }
+
+        .menu-btn.random {
+            background-color: var(--sun-yellow);
+            border-color: #F1C40F;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .menu-btn:hover, .menu-btn:active {
+            background-color: var(--btn-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Game UI */
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1em;
+            font-weight: bold;
+            background-color: var(--sky-blue);
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+        }
+
+        .question-box {
+            font-size: 2em;
+            margin: 25px 0;
+            font-weight: bold;
+            color: #2C3E50;
+            letter-spacing: 1px;
+            word-wrap: break-word;
+        }
+
+        /* Multiple Choice Grid */
+        .mc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .mc-btn {
+            background-color: white;
+            border: 2px solid var(--btn-border);
+            padding: 18px 10px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-dark);
+            font-weight: bold;
+            word-wrap: break-word;
+            min-height: 60px; 
+        }
+
+        .mc-btn:hover:not(:disabled) {
+            background-color: var(--btn-hover);
+            border-color: var(--sky-blue);
+        }
+
+        .mc-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .mc-btn:disabled {
+            cursor: default;
+        }
+
+        .mc-btn.correct-ans {
+            background-color: var(--grass-green) !important;
+            color: white !important;
+            border-color: var(--grass-green) !important;
+        }
+
+        .mc-btn.wrong-ans {
+            background-color: var(--error-red) !important;
+            color: white !important;
+            border-color: var(--error-red) !important;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 30px;
+        }
+
+        .correct-text { color: var(--grass-green); }
+        .incorrect-text { color: var(--error-red); }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-save, .btn-back {
+            flex: 1;
+            padding: 14px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background-color: var(--sun-yellow);
+            color: var(--text-dark);
+        }
+
+        .btn-back {
+            background-color: #E0E0E0;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            .mc-grid {
+                grid-template-columns: 1fr; 
+            }
+            .question-box {
+                font-size: 1.6em;
+            }
+            .action-btns {
+                flex-direction: column-reverse; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- MENU VIEW -->
+<div class="container" id="menuView">
+    <h1>Factorization Challenge</h1>
+    <p class="subtitle">Select a question type to start practicing</p>
+
+    <div class="menu-grid">
+        <button class="menu-btn" onclick="startGame(1)">
+            <span class="badge">Type 1</span> a² - b²
+        </button>
+        <button class="menu-btn" onclick="startGame(2)">
+            <span class="badge">Type 2</span> (a+k)² - b²
+        </button>
+        <button class="menu-btn" onclick="startGame(3)">
+            <span class="badge">Type 3</span> (x+y)² - (a+b)²
+        </button>
+        <button class="menu-btn" onclick="startGame(4)">
+            <span class="badge">Type 4</span> kx² - kb²
+        </button>
+        <button class="menu-btn" onclick="startGame(5)">
+            <span class="badge">Type 5</span> x² - c² + xy - cy
+        </button>
+        <button class="menu-btn random" onclick="startGame(0)">
+            🎲 Random Mix (All Types)
+        </button>
+    </div>
+</div>
+
+<!-- GAME VIEW -->
+<div class="container" id="gameView" style="display: none;">
+    <h1 id="gameModeTitle">Factorization</h1>
+    
+    <div class="score-board">
+        <span>Score: <span id="score">0</span></span>
+        <span>Questions: <span id="questionCount">0</span></span>
+    </div>
+
+    <div class="question-box" id="questionDisplay">Loading...</div>
+
+    <div class="mc-grid" id="mcContainer">
+        <!-- Buttons injected here -->
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="action-btns">
+        <button class="btn-back" onclick="returnToMenu()">Quit to Menu</button>
+        <button class="btn-save" id="saveBtn" onclick="saveProgressAsPDF()">Save Progress (PDF)</button>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+    let questionCount = 0;
+    let historyLog = [];
+    let currentQuestionData = {};
+    let activeMode = 0;
+    let modeNames = {
+        0: "Random Mix",
+        1: "Type 1: a² - b²",
+        2: "Type 2: (a+k)² - b²",
+        3: "Type 3: (x+y)² - (a+b)²",
+        4: "Type 4: kx² - kb²",
+        5: "Type 5: Factor by Grouping"
+    };
+
+    const fmtSign = (num) => num > 0 ? `+${num}` : `${num}`;
+    const fmtSignSpaced = (num) => num > 0 ? `+ ${num}` : `- ${Math.abs(num)}`;
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function startGame(mode) {
+        activeMode = mode;
+        score = 0;
+        questionCount = 0;
+        historyLog = [];
+        
+        document.getElementById('score').innerText = score;
+        document.getElementById('questionCount').innerText = questionCount;
+        document.getElementById('gameModeTitle').innerText = modeNames[mode];
+        
+        document.getElementById('menuView').style.display = 'none';
+        document.getElementById('gameView').style.display = 'block';
+        
+        generateQuestion();
+    }
+
+    function returnToMenu() {
+        if (historyLog.length > 0) {
+            if(!confirm("Warning: Returning to the menu will reset your current score. Ensure you have saved your progress! Do you want to quit?")) return;
+        }
+        document.getElementById('gameView').style.display = 'none';
+        document.getElementById('menuView').style.display = 'block';
+    }
+
+    function generateQuestion() {
+        document.getElementById('feedback').innerHTML = '';
+        const mcContainer = document.getElementById('mcContainer');
+        mcContainer.innerHTML = ''; 
+
+        let type = activeMode;
+        if (activeMode === 0) type = rand(1, 5);
+
+        let qHTML = "", qText = "", correct = "", distractors = [];
+
+        if (type === 1) {
+            const vars = ['x', 'y', 'a', 'm'];
+            const v = vars[rand(0, vars.length - 1)];
+            const b = rand(2, 10);
+            const bSq = b * b;
+            qHTML = `${v}<sup>2</sup> - ${bSq}`;
+            qText = `${v}^2 - ${bSq}`;
+            correct = `(${v}+${b})(${v}-${b})`;
+            distractors = [`(${v}-${b})<sup>2</sup>`, `(${v}+${bSq})(${v}-${bSq})`, `${v}(${v}-${bSq})`];
+
+        } else if (type === 2) {
+            const v = 'x';
+            let k = rand(1, 6), b = rand(1, 6);
+            if (k === b) k++; 
+            qHTML = `(${v} ${fmtSignSpaced(k)})<sup>2</sup> - ${b * b}`;
+            qText = `(${v}${fmtSign(k)})^2 - ${b*b}`;
+            correct = `(${v}${fmtSign(k+b)})(${v}${fmtSign(k-b)})`;
+            distractors = [`(${v}${fmtSign(k-b)})(${v}${fmtSign(k-b)})`, `(${v}${fmtSign(k+b*b)})(${v}${fmtSign(k-b*b)})`, `(${v}${fmtSign(k+b)})(${v}${fmtSign(b-k)})`];
+
+        } else if (type === 3) {
+            const v1 = 'x', v2 = 'y';
+            let k = rand(1, 4), b = rand(1, 4);
+            if (k === b) k++; 
+            qHTML = `(${v1} ${fmtSignSpaced(k)})<sup>2</sup> - (${v2} ${fmtSignSpaced(b)})<sup>2</sup>`;
+            qText = `(${v1}${fmtSign(k)})^2 - (${v2}${fmtSign(b)})^2`;
+            correct = `(${v1}+${v2}${fmtSign(k+b)})(${v1}-${v2}${fmtSign(k-b)})`;
+            distractors = [`(${v1}+${v2}${fmtSign(k+b)})(${v1}-${v2}${fmtSign(k+b)})`, `(${v1}+${v2}${fmtSign(k-b)})(${v1}-${v2}${fmtSign(k+b)})`, `(${v1}+${v2}${fmtSign(k+b)})(${v1}+${v2}${fmtSign(k-b)})`];
+
+        } else if (type === 4) {
+            const v = ['a', 'm', 'p'][rand(0, 2)];
+            const k = rand(2, 5), b = rand(2, 6);
+            const kbSq = k * (b * b);
+            qHTML = `${k}${v}<sup>2</sup> - ${kbSq}`;
+            qText = `${k}${v}^2 - ${kbSq}`;
+            correct = `${k}(${v}+${b})(${v}-${b})`;
+            distractors = [`${k}(${v}+${b*b})(${v}-${b*b})`, `(${k}${v}+${b})(${k}${v}-${b})`, `${k}(${v}-${b})<sup>2</sup>`];
+
+        } else if (type === 5) {
+            const v1 = 'x', v2 = 'y';
+            const c = rand(2, 7);
+            const cSq = c * c;
+            qHTML = `${v1}<sup>2</sup> - ${cSq} + ${v1}${v2} - ${c}${v2}`;
+            qText = `${v1}^2 - ${cSq} + ${v1}${v2} - ${c}${v2}`;
+            correct = `(${v1}-${c})(${v1}+${v2}+${c})`;
+            distractors = [`(${v1}+${c})(${v1}+${v2}-${c})`, `(${v1}-${c})(${v1}-${v2}+${c})`, `(${v1}-${c})(${v1}+${v2}-${c})`];
+        }
+
+        document.getElementById('questionDisplay').innerHTML = qHTML;
+        const cleanCorrectText = correct.replace(/<sup>/g, '^').replace(/<\/sup>/g, '');
+
+        let options = [
+            { text: correct, isCorrect: true, cleanText: cleanCorrectText },
+            { text: distractors[0], isCorrect: false, cleanText: distractors[0].replace(/<sup>/g, '^').replace(/<\/sup>/g, '') },
+            { text: distractors[1], isCorrect: false, cleanText: distractors[1].replace(/<sup>/g, '^').replace(/<\/sup>/g, '') },
+            { text: distractors[2], isCorrect: false, cleanText: distractors[2].replace(/<sup>/g, '^').replace(/<\/sup>/g, '') }
+        ];
+
+        shuffle(options);
+        currentQuestionData = { qText: qText, correctCleanText: cleanCorrectText };
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'mc-btn';
+            btn.innerHTML = opt.text;
+            btn.onclick = () => handleAnswer(btn, opt.isCorrect, opt.cleanText);
+            mcContainer.appendChild(btn);
+        });
+    }
+
+    function handleAnswer(clickedBtn, isCorrect, chosenText) {
+        const allBtns = document.querySelectorAll('.mc-btn');
+        allBtns.forEach(btn => btn.disabled = true);
+
+        const feedbackEl = document.getElementById('feedback');
+        
+        if (isCorrect) {
+            score++;
+            clickedBtn.classList.add('correct-ans');
+            feedbackEl.innerHTML = '🎉 Correct!';
+            feedbackEl.className = 'feedback correct-text';
+        } else {
+            clickedBtn.classList.add('wrong-ans');
+            allBtns.forEach(btn => {
+                if (btn.innerHTML.replace(/<sup>/g, '^').replace(/<\/sup>/g, '') === currentQuestionData.correctCleanText) {
+                    btn.classList.add('correct-ans');
+                }
+            });
+            feedbackEl.innerHTML = `❌ Incorrect.`;
+            feedbackEl.className = 'feedback incorrect-text';
+        }
+
+        questionCount++;
+        document.getElementById('score').innerText = score;
+        document.getElementById('questionCount').innerText = questionCount;
+
+        historyLog.push({
+            question: currentQuestionData.qText,
+            userAnswer: chosenText,
+            correctAnswer: currentQuestionData.correctCleanText,
+            isCorrect: isCorrect
+        });
+
+        setTimeout(generateQuestion, 2000); 
+    }
+
+    // --- NEW PDF GENERATION FUNCTION ---
+    function saveProgressAsPDF() {
+        if (historyLog.length === 0) {
+            alert("Answer some questions first before saving!");
+            return;
+        }
+
+        // Change button text to show it's working
+        const saveBtn = document.getElementById('saveBtn');
+        const originalText = saveBtn.innerText;
+        saveBtn.innerText = "Generating PDF...";
+        saveBtn.disabled = true;
+
+        // 1. Create a hidden HTML layout strictly for the PDF
+        const element = document.createElement('div');
+        element.style.padding = '30px';
+        element.style.fontFamily = 'Arial, sans-serif';
+        element.style.color = '#333';
+        element.style.backgroundColor = '#ffffff';
+
+        let htmlContent = `
+            <h1 style="color: #2C82C9; font-size: 24px; text-align: center; border-bottom: 2px solid #FFD700; padding-bottom: 10px;">
+                Factorization Practice Record
+            </h1>
+            <p style="color: #555; text-align: center; margin-bottom: 20px;">
+                <strong>Mode:</strong> ${modeNames[activeMode]}<br>
+                <strong>Date:</strong> ${new Date().toLocaleDateString()}
+            </p>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;">
+                <thead>
+                    <tr>
+                        <th style="padding: 12px; border: 1px solid #ddd; text-align: left; background-color: #87CEEB; color: #333;">Question</th>
+                        <th style="padding: 12px; border: 1px solid #ddd; text-align: center; background-color: #87CEEB; color: #333;">Student's Answer</th>
+                        <th style="padding: 12px; border: 1px solid #ddd; text-align: center; background-color: #87CEEB; color: #333;">Correct Answer</th>
+                        <th style="padding: 12px; border: 1px solid #ddd; text-align: center; background-color: #87CEEB; color: #333;">Result</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        historyLog.forEach(item => {
+            let resultText = item.isCorrect 
+                ? '<span style="color: #4CAF50; font-weight: bold;">Correct</span>' 
+                : '<span style="color: #F44336; font-weight: bold;">Incorrect</span>';
+            
+            htmlContent += `
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ddd; font-family: monospace; font-size: 14px;">${item.question}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${item.userAnswer}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center; color: #555;">${item.correctAnswer}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${resultText}</td>
+                </tr>`;
+        });
+
+        // Add Final Score Box
+        const percentage = Math.round((score / questionCount) * 100);
+        let scoreColor = percentage >= 80 ? '#4CAF50' : (percentage >= 50 ? '#FF9800' : '#F44336');
+
+        htmlContent += `
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 30px; padding: 20px; background-color: #f9f9f9; border: 1px solid #eee; text-align: center; border-radius: 8px;">
+                <div style="font-size: 18px; color: #555;">Final Score</div>
+                <div style="font-size: 28px; font-weight: bold; color: ${scoreColor};">
+                    ${score} / ${questionCount} (${percentage}%)
+                </div>
+            </div>
+        `;
+
+        element.innerHTML = htmlContent;
+
+        // 2. Configure the PDF settings
+        const dateStr = new Date().toISOString().slice(0,10);
+        const modeFilename = modeNames[activeMode].replace(/[^a-zA-Z0-9]/g, '');
+        
+        const opt = {
+            margin:       10, // 10mm margins
+            filename:     `Math_Homework_${modeFilename}_${dateStr}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 }, // Higher resolution
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // 3. Generate and download the PDF
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Restore button text after download finishes
+            saveBtn.innerText = "Save Progress (PDF)";
+            saveBtn.disabled = false;
+        }).catch(err => {
+            alert("Oops! There was an error generating the PDF.");
+            saveBtn.innerText = "Save Progress (PDF)";
+            saveBtn.disabled = false;
+        });
+    }
+</script>
+
+</body>
+</html>
